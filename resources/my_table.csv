@@ -1,0 +1,4 @@
+user_id,email
+{%- for user in users %}
+{{ user.uuid }},{{ user.email }}
+{%- endfor -%}

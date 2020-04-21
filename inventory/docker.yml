@@ -1,0 +1,9 @@
+mysql_conf: 'mysql://root:test@mysql:3306/test'
+psql_conf: 'postgresql://postgres:postgres@custom_postgres_1:5432/postgres'
+airflow_db: 'airflow:airflow@postgres:5432/airflow'
+airflow_web: 'http://webserver:8080'
+airflow_fernet: 'zp8kV516l9tKzqq9pJ2Y6cXbM3bgEWIapGwzQs6jio4='
+s3_config:
+    url: http://minio:9000
+    key_id: minio
+    secret_key: minio123

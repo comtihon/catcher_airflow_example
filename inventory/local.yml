@@ -1,0 +1,8 @@
+mysql_conf: 'root:test@localhost:3307/test'
+psql_conf: 'postgres:postgres@localhost:5432/postgres'
+airflow_db: 'airflow:airflow@localhost:5433/airflow'
+airflow_web: 'http://127.0.0.1:8080'
+s3_config:
+    url: http://127.0.0.1:9001
+    key_id: minio
+    secret_key: minio123

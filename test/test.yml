@@ -1,0 +1,71 @@
+---
+variables:
+  users:
+    - uuid: '{{ random("uuid4") }}'
+      email: 'bar@test.com'
+    - uuid: '{{ random("uuid4") }}'
+      email: 'baz@test.com'
+    - uuid: '{{ random("uuid4") }}'
+      email: 'foo@test.com'
+  pipeline: 'simple_example_pipeline'
+  mysql_tbl_name: 'my_table'
+steps:
+  - prepare:
+      populate:
+        mysql:
+          conf: '{{ mysql_conf }}'
+          schema: my_table.sql
+          data:
+            my_table: my_table.csv
+        postgres:
+          conf: '{{ psql_conf }}'
+          schema: psql_tbl.sql
+      name: 'Create table and populate initial data'
+  - airflow:
+      run:
+        config:
+          db_conf: '{{ airflow_db }}'
+          url: '{{ airflow_web }}'
+          populate_connections: true
+          fernet_key: '{{ airflow_fernet }}'
+        dag_id: '{{ pipeline }}'
+        sync: true
+        wait_timeout: 150
+      name: 'Trigger pipeline {{ pipeline }}'
+  - s3:
+      get:
+        config: '{{ s3_config }}'
+        path: 'my_awesome_bucket/data/{{ mysql_tbl_name }}/year={{ NOW_DT[:4] }}/month={{ NOW_DT[5:7] }}/day={{ NOW_DT[8:10] }}/my_table.csv'
+      register: {s3_csv: '{{ OUTPUT }}'}
+      name: 'Get file from s3'
+  - echo: {from_file: 'my_table.csv', register: {expect_csv: '{{ OUTPUT }}'}}
+  - check:
+      equals: {the: '{{ s3_csv.strip() }}', is: '{{ expect_csv.strip() }}'}
+      name: 'Check data in s3 expected'
+  - expect:
+      compare:
+        postgres:
+          conf: '{{ psql_conf }}'
+          data:
+            psql_tbl: 'my_table.csv'
+          strict: true
+      name: 'Postgres data match expected'
+finally:
+  - mysql:
+      request:
+        conf: '{{ mysql_conf }}'
+        query: 'drop table my_table'
+      name: 'Clean up mysql'
+      ignore_errors: true
+  - postgres:
+      request:
+        conf: '{{ psql_conf }}'
+        query: 'drop table psql_tbl'
+      name: 'Clean up postgres'
+      ignore_errors: true
+  - s3:
+      delete:
+        config: '{{ s3_config }}'
+        path: 'my_awesome_bucket/data/{{ mysql_tbl_name }}/year={{ NOW_DT[:4] }}/month={{ NOW_DT[5:7] }}/day={{ NOW_DT[8:10] }}/my_table.csv'
+      name: 'Clean up s3'
+      ignore_errors: true

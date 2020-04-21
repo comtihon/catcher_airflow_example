@@ -1,0 +1,64 @@
+version: '2.1'
+services:
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+        ports:
+            - "5433:5432"
+            
+    webserver:
+        image: puckel/docker-airflow:1.10.4
+        restart: always
+        depends_on:
+            - postgres
+        environment:
+            - LOAD_EX=n
+            - EXECUTOR=Local
+            - FERNET_KEY=zp8kV516l9tKzqq9pJ2Y6cXbM3bgEWIapGwzQs6jio4=
+        volumes:
+            - ./dags:/usr/local/airflow/dags
+            - ./requirements.txt:/requirements.txt
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
+
+    mysql:
+        image: mysql
+        ports:
+        - "3307:3306"
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_ROOT_PASSWORD: "test"
+            MYSQL_DATABASE: "test"
+
+    minio:
+        image: minio/minio
+        volumes:
+        - data:/data
+        ports:
+        - "9001:9000"
+        entrypoint: sh
+        environment:
+            MINIO_ACCESS_KEY: minio
+            MINIO_SECRET_KEY: minio123
+        command: -c 'mkdir -p /data/my_awesome_bucket && usr/bin/minio server /data'
+        
+    custom_postgres_1:
+        image: postgres
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=postgres
+        ports:
+            - "5432:5432"
+        
+volumes:
+  data:
