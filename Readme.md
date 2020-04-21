@@ -12,11 +12,11 @@ Test should be run in docker within the same network as the dependencies, as it 
 Airflow's connections based on Catcher's inventory file. Catcher already has ready-to-use docker [image](https://hub.docker.com/repository/docker/comtihon/catcher)
 which you can customize by mounting your own directories:
 ```
-docker run --volume=$(pwd)/test:/opt/catcher/test \
-           --volume=$(pwd)/resources:/opt/catcher/resources \
-           --volume=$(pwd)/inventory:/opt/catcher/inventory \
-           --network catcherairflowexample_default \
-           catcher -i inventory/docker.yml test
+docker run -it --volume=$(pwd)/test:/opt/catcher/test \
+               --volume=$(pwd)/resources:/opt/catcher/resources \
+               --volume=$(pwd)/inventory:/opt/catcher/inventory \
+               --network catcherairflowexample_default \
+           comtihon/catcher -i inventory/docker.yml test
 ```
 
 ## The pipeline

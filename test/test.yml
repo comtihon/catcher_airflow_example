@@ -35,7 +35,7 @@ steps:
   - s3:
       get:
         config: '{{ s3_config }}'
-        path: 'my_awesome_bucket/data/{{ mysql_tbl_name }}/year={{ NOW_DT[:4] }}/month={{ NOW_DT[5:7] }}/day={{ NOW_DT[8:10] }}/my_table.csv'
+        path: 'my_awesome_bucket/data/{{ mysql_tbl_name }}/year={{ now()[:4] }}/month={{ now()[5:7] }}/day={{ now()[8:10] }}/my_table.csv'
       register: {s3_csv: '{{ OUTPUT }}'}
       name: 'Get file from s3'
   - echo: {from_file: 'my_table.csv', register: {expect_csv: '{{ OUTPUT }}'}}
